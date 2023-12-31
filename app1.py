@@ -14,7 +14,7 @@ no_driver_sound = mixer.Sound('nodriver_audio.wav')
 sleep_sound = mixer.Sound('sleep_sound.wav')
 tired_sound = mixer.Sound('rest_audio.wav')
 
-# Initializing the face detector and landmark detector
+
 detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
 
@@ -28,7 +28,7 @@ def blinked(a, b, c, d, e, f):
     down = compute(a, f)
     ratio = up/(2.0*down)
 
-    # Checking if it is blinked
+
     if (ratio > 0.22):
         return 'active'
     else:
@@ -36,19 +36,14 @@ def blinked(a, b, c, d, e, f):
 
 
 def mouth_aspect_ratio(mouth):
-    # compute the euclidean distances between the two sets of
-    # vertical mouth landmarks (x, y)-coordinates
+
     A = compute(mouth[2], mouth[10])  # 51, 59
     B = compute(mouth[4], mouth[8])  # 53, 57
 
-    # compute the euclidean distance between the horizontal
-    # mouth landmark (x, y)-coordinates
     C = compute(mouth[0], mouth[6])  # 49, 55
 
-    # compute the mouth aspect ratio
     mar = (A + B) / (2.0 * C)
 
-    # return the mouth aspect ratio
     return mar
 
 
@@ -63,13 +58,13 @@ async def tired():
     while (time.time()-start < 9):
         if(time.time()-rest_time_start>3):
             tired_sound.play()
-        # cv2.imshow("USER",tired_img)
+
     tired_sound.stop()
     return
 
 
 def detech():
-    # status marking for current state
+
     sleep_sound_flag = 0
     no_driver_sound_flag = 0
     yawning = 0
@@ -80,10 +75,8 @@ def detech():
     color = (0, 0, 0)
     no_driver=0
     frame_color = (0, 255, 0)
-    # Initializing the camera and taking the instance
     cap = cv2.VideoCapture(0)
 
-    # Give some time for camera to initialize(not required)
     time.sleep(1)
     start = time.time()
     no_driver_time=time.time()
@@ -95,13 +88,13 @@ def detech():
         face_frame = frame.copy()
         faces = detector(gray, 0)
 
-        # detected face in faces array
+
         if faces:
          no_driver_sound_flag=0
          no_driver_sound.stop()
          no_driver=0
          no_driver_time=time.time()
-        #  sleep_sound.stop()
+
          for face in faces:
             x1 = face.left()
             y1 = face.top()
@@ -109,12 +102,12 @@ def detech():
             y2 = face.bottom()
 
             cv2.rectangle(frame, (x1, y1), (x2, y2), frame_color, 2)
-            # cv2.rectangle(face_frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+
 
             landmarks = predictor(gray, face)
             landmarks = face_utils.shape_to_np(landmarks)
 
-            # The numbers are actually the landmarks which will show eye
+
             left_blink = blinked(landmarks[36], landmarks[37],
                                  landmarks[38], landmarks[41], landmarks[40], landmarks[39])
             right_blink = blinked(landmarks[42], landmarks[43],
@@ -123,7 +116,6 @@ def detech():
             mouthMAR = mouth_aspect_ratio(mouth)
             mar = mouthMAR
 
-            # Now judge what to do for the eye blinks
 
             if (mar > 0.70):
                 sleep = 0
@@ -166,9 +158,8 @@ def detech():
 
             if (time.time()-start < 60 and no_yawn >= 3):
                 no_yawn = 0
-                # print("tired")
-                # asyncio.run(put_image(frame))
-                # time.sleep(2)
+
+
                 asyncio.run(tired())
             elif time.time()-start > 60:
                 start = time.time()
